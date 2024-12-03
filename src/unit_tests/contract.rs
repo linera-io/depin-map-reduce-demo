@@ -15,17 +15,19 @@ fn initial_state() {
     assert_eq!(*app.state.value.get(), 0);
 }
 
+/// Test if submitting a new value updates the value in the state.
 #[test]
-fn operation() {
+fn submit_operation() {
     let mut app = create_and_instantiate_app();
 
-    let increment = 10u64;
+    let submitted_value = 10u64;
 
-    let _response = app
-        .execute_operation(Operation::Increment { value: increment })
-        .blocking_wait();
+    app.execute_operation(Operation::Submit {
+        value: submitted_value,
+    })
+    .blocking_wait();
 
-    assert_eq!(*app.state.value.get(), increment);
+    assert_eq!(*app.state.value.get(), submitted_value);
 }
 
 /// Creates a [`DepinDemoContract`] instance ready to be tested.

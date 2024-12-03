@@ -49,7 +49,7 @@ impl Contract for DepinDemoContract {
 
     async fn execute_operation(&mut self, operation: Self::Operation) -> Self::Response {
         match operation {
-            Operation::Increment { value } => {
+            Operation::Submit { value } => {
                 self.state.value.set(self.state.value.get() + value);
             }
         }

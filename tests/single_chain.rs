@@ -20,16 +20,20 @@ async fn single_chain_test() {
 
     let application_id = chain.create_application(bytecode_id, (), (), vec![]).await;
 
-    let increment = 10u64;
+    let submitted_value = 10u64;
     chain
         .add_block(|block| {
-            block.with_operation(application_id, Operation::Increment { value: increment });
+            block.with_operation(
+                application_id,
+                Operation::Submit {
+                    value: submitted_value,
+                },
+            );
         })
         .await;
 
-    let final_value = increment;
     let response = chain.graphql_query(application_id, "query { value }").await;
     let state_value = response["value"].as_u64().expect("Failed to get the u64");
 
-    assert_eq!(state_value, final_value);
+    assert_eq!(state_value, submitted_value);
 }

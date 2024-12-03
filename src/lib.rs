@@ -22,5 +22,5 @@ impl ServiceAbi for DepinDemoAbi {
 
 #[derive(Debug, Deserialize, Serialize, GraphQLMutationRoot)]
 pub enum Operation {
-    Increment { value: u64 },
+    Submit { value: u64 },
 }
