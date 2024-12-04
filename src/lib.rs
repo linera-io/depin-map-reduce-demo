@@ -3,7 +3,7 @@
 
 use async_graphql::{Request, Response};
 use linera_sdk::{
-    base::{ContractAbi, ServiceAbi},
+    base::{ChainId, ContractAbi, ServiceAbi},
     graphql::GraphQLMutationRoot,
 };
 use serde::{Deserialize, Serialize};
@@ -22,5 +22,6 @@ impl ServiceAbi for DepinDemoAbi {
 
 #[derive(Debug, Deserialize, Serialize, GraphQLMutationRoot)]
 pub enum Operation {
+    ConnectToParent { parent: ChainId },
     Submit { value: u64 },
 }
