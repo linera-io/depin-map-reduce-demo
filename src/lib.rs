@@ -24,4 +24,5 @@ impl ServiceAbi for DepinDemoAbi {
 pub enum Operation {
     ConnectToParent { parent: ChainId },
     Submit { value: u64 },
+    Flush,
 }

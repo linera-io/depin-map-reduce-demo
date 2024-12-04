@@ -9,6 +9,8 @@ mod state;
 #[path = "unit_tests/contract.rs"]
 mod tests;
 
+use std::mem;
+
 use linera_sdk::{
     base::WithContractAbi,
     views::{RootView, View},
@@ -31,7 +33,7 @@ impl WithContractAbi for DepinDemoContract {
 }
 
 impl Contract for DepinDemoContract {
-    type Message = ();
+    type Message = u64;
     type Parameters = ();
     type InstantiationArgument = ();
 
@@ -55,10 +57,22 @@ impl Contract for DepinDemoContract {
             Operation::Submit { value } => {
                 self.state.value.set(self.state.value.get() + value);
             }
+            Operation::Flush => {
+                let parent = self
+                    .state
+                    .parent
+                    .get()
+                    .expect("Can't flush if the chain is not connected to a parent chain");
+                let value = mem::take(self.state.value.get_mut());
+
+                self.runtime.send_message(parent, value);
+            }
         }
     }
 
-    async fn execute_message(&mut self, _message: Self::Message) {}
+    async fn execute_message(&mut self, child_value: Self::Message) {
+        self.state.value.set(self.state.value.get() + child_value);
+    }
 
     async fn store(mut self) {
         self.state.save().await.expect("Failed to save state");
