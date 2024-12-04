@@ -1,6 +1,8 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::sync::Arc;
+
 use async_graphql::{Request, Response, Value};
 use futures::FutureExt as _;
 use linera_sdk::{util::BlockingWait, views::View, Service, ServiceRuntime};
@@ -17,7 +19,10 @@ fn query() {
         .expect("Failed to read from mock key value store");
     state.value.set(value);
 
-    let service = DepinDemoService { state, runtime };
+    let service = DepinDemoService {
+        state: Arc::new(state),
+        runtime,
+    };
     let request = Request::new("{ value }");
 
     let response = service

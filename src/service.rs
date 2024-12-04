@@ -9,7 +9,9 @@ mod state;
 #[path = "unit_tests/service.rs"]
 mod tests;
 
-use async_graphql::{EmptySubscription, Object, Schema};
+use std::sync::Arc;
+
+use async_graphql::{EmptySubscription, Schema};
 use linera_sdk::{
     base::WithServiceAbi, graphql::GraphQLMutationRoot, views::View, Service, ServiceRuntime,
 };
@@ -19,7 +21,7 @@ use depin_demo::Operation;
 use self::state::DepinDemoState;
 
 pub struct DepinDemoService {
-    state: DepinDemoState,
+    state: Arc<DepinDemoState>,
     runtime: ServiceRuntime<Self>,
 }
 
@@ -33,33 +35,23 @@ impl Service for DepinDemoService {
     type Parameters = ();
 
     async fn new(runtime: ServiceRuntime<Self>) -> Self {
-        let state = DepinDemoState::load(runtime.root_view_storage_context())
-            .await
-            .expect("Failed to load state");
+        let state = Arc::new(
+            DepinDemoState::load(runtime.root_view_storage_context())
+                .await
+                .expect("Failed to load state"),
+        );
+
         DepinDemoService { state, runtime }
     }
 
     async fn handle_query(&self, query: Self::Query) -> Self::QueryResponse {
         Schema::build(
-            QueryRoot {
-                value: *self.state.value.get(),
-            },
+            self.state.clone(),
             Operation::mutation_root(),
             EmptySubscription,
         )
         .finish()
         .execute(query)
         .await
-    }
-}
-
-struct QueryRoot {
-    value: u64,
-}
-
-#[Object]
-impl QueryRoot {
-    async fn value(&self) -> &u64 {
-        &self.value
     }
 }
