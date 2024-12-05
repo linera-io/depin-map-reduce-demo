@@ -21,6 +21,7 @@ fn operation() {
     assert_eq!(*app.state.value.get(), initial_value + increment);
 }
 
+/// Creates a [`DepinDemoContract`] instance ready to be tested.
 fn create_and_instantiate_app(initial_value: u64) -> DepinDemoContract {
     let runtime = ContractRuntime::new().with_application_parameters(());
     let mut contract = DepinDemoContract {
