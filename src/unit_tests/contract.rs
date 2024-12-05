@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use linera_sdk::{util::BlockingWait, views::View, Contract, ContractRuntime};
+use test_strategy::proptest;
 
 use depin_demo::Operation;
 
@@ -15,19 +16,22 @@ fn initial_state() {
     assert_eq!(*app.state.value.get(), 0);
 }
 
-/// Test if submitting a new value updates the value in the state.
-#[test]
-fn submit_operation() {
+/// Test if submitted new values accumulate in the state value.
+#[proptest]
+fn submit_operation(values_to_submit: Vec<u32>) {
     let mut app = create_and_instantiate_app();
 
-    let submitted_value = 10u64;
+    for &value in &values_to_submit {
+        app.execute_operation(Operation::Submit {
+            value: value.into(),
+        })
+        .blocking_wait();
+    }
 
-    app.execute_operation(Operation::Submit {
-        value: submitted_value,
-    })
-    .blocking_wait();
-
-    assert_eq!(*app.state.value.get(), submitted_value);
+    assert_eq!(
+        *app.state.value.get(),
+        values_to_submit.into_iter().map(u64::from).sum::<u64>()
+    );
 }
 
 /// Creates a [`DepinDemoContract`] instance ready to be tested.
