@@ -33,7 +33,7 @@ impl WithContractAbi for DepinDemoContract {
 impl Contract for DepinDemoContract {
     type Message = ();
     type Parameters = ();
-    type InstantiationArgument = u64;
+    type InstantiationArgument = ();
 
     async fn load(runtime: ContractRuntime<Self>) -> Self {
         let state = DepinDemoState::load(runtime.root_view_storage_context())
@@ -42,10 +42,9 @@ impl Contract for DepinDemoContract {
         DepinDemoContract { state, runtime }
     }
 
-    async fn instantiate(&mut self, argument: Self::InstantiationArgument) {
+    async fn instantiate(&mut self, _argument: Self::InstantiationArgument) {
         // validate that the application parameters were configured correctly.
         self.runtime.application_parameters();
-        self.state.value.set(argument);
     }
 
     async fn execute_operation(&mut self, operation: Self::Operation) -> Self::Response {

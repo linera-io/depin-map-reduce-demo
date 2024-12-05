@@ -15,13 +15,10 @@ use linera_sdk::test::TestValidator;
 #[tokio::test(flavor = "multi_thread")]
 async fn single_chain_test() {
     let (validator, bytecode_id) =
-        TestValidator::with_current_bytecode::<depin_demo::DepinDemoAbi, (), u64>().await;
+        TestValidator::with_current_bytecode::<depin_demo::DepinDemoAbi, (), ()>().await;
     let mut chain = validator.new_chain().await;
 
-    let initial_state = 10u64;
-    let application_id = chain
-        .create_application(bytecode_id, (), initial_state, vec![])
-        .await;
+    let application_id = chain.create_application(bytecode_id, (), (), vec![]).await;
 
     let increment = 10u64;
     chain
@@ -30,7 +27,7 @@ async fn single_chain_test() {
         })
         .await;
 
-    let final_value = initial_state + increment;
+    let final_value = increment;
     let response = chain.graphql_query(application_id, "query { value }").await;
     let state_value = response["value"].as_u64().expect("Failed to get the u64");
 

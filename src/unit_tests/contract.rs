@@ -9,8 +9,7 @@ use super::{DepinDemoContract, DepinDemoState};
 
 #[test]
 fn operation() {
-    let initial_value = 10u64;
-    let mut app = create_and_instantiate_app(initial_value);
+    let mut app = create_and_instantiate_app();
 
     let increment = 10u64;
 
@@ -18,11 +17,11 @@ fn operation() {
         .execute_operation(Operation::Increment { value: increment })
         .blocking_wait();
 
-    assert_eq!(*app.state.value.get(), initial_value + increment);
+    assert_eq!(*app.state.value.get(), increment);
 }
 
 /// Creates a [`DepinDemoContract`] instance ready to be tested.
-fn create_and_instantiate_app(initial_value: u64) -> DepinDemoContract {
+fn create_and_instantiate_app() -> DepinDemoContract {
     let runtime = ContractRuntime::new().with_application_parameters(());
     let mut contract = DepinDemoContract {
         state: DepinDemoState::load(runtime.root_view_storage_context())
@@ -31,9 +30,7 @@ fn create_and_instantiate_app(initial_value: u64) -> DepinDemoContract {
         runtime,
     };
 
-    contract.instantiate(initial_value).blocking_wait();
-
-    assert_eq!(*contract.state.value.get(), initial_value);
+    contract.instantiate(()).blocking_wait();
 
     contract
 }
