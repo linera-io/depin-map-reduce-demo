@@ -14,6 +14,7 @@ fn initial_state() {
     let app = create_and_instantiate_app();
 
     assert_eq!(*app.state.value.get(), 0);
+    assert_eq!(*app.state.parent.get(), None);
 }
 
 /// Test if submitted new values accumulate in the state value.
