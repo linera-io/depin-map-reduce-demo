@@ -7,6 +7,14 @@ use depin_demo::Operation;
 
 use super::{DepinDemoContract, DepinDemoState};
 
+/// Test initial state of the application.
+#[test]
+fn initial_state() {
+    let app = create_and_instantiate_app();
+
+    assert_eq!(*app.state.value.get(), 0);
+}
+
 #[test]
 fn operation() {
     let mut app = create_and_instantiate_app();
