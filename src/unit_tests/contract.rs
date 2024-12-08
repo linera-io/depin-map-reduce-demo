@@ -59,6 +59,15 @@ fn connect_to_parent(parent: ChainId) {
     assert_eq!(*app.state.parent.get(), Some(parent));
 }
 
+/// Test if flushing without a configured parent causes the block to be rejected.
+#[test]
+#[should_panic(expected = "Can't flush if the chain is not connected to a parent chain")]
+fn flush_without_parent() {
+    let mut app = create_and_instantiate_app();
+
+    app.execute_operation(Operation::Flush).blocking_wait();
+}
+
 /// Creates a [`DepinDemoContract`] instance ready to be tested.
 fn create_and_instantiate_app() -> DepinDemoContract {
     let runtime = ContractRuntime::new().with_application_parameters(());
