@@ -1,7 +1,14 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use linera_sdk::{base::ChainId, util::BlockingWait, views::View, Contract, ContractRuntime};
+use std::mem;
+
+use linera_sdk::{
+    base::{ChainId, Destination, Resources, SendMessageRequest},
+    util::BlockingWait,
+    views::View,
+    Contract, ContractRuntime,
+};
 use test_strategy::proptest;
 
 use depin_demo::Operation;
@@ -66,6 +73,43 @@ fn flush_without_parent() {
     let mut app = create_and_instantiate_app();
 
     app.execute_operation(Operation::Flush).blocking_wait();
+}
+
+/// Test if flushing values sends messages to the parent chain.
+#[proptest]
+fn flush_sends_messages(parent: ChainId, values_to_submit: Vec<Option<u32>>) {
+    let mut app = create_and_instantiate_app();
+    let mut accumulated = 0_u64;
+
+    app.execute_operation(Operation::ConnectToParent { parent })
+        .blocking_wait();
+
+    for maybe_value in values_to_submit.into_iter().chain(None) {
+        match maybe_value {
+            Some(value) => {
+                app.execute_operation(Operation::Submit {
+                    value: value.into(),
+                })
+                .blocking_wait();
+
+                accumulated += u64::from(value);
+            }
+            None => {
+                app.execute_operation(Operation::Flush).blocking_wait();
+
+                assert_eq!(
+                    mem::take(&mut *app.runtime.created_send_message_requests()),
+                    vec![SendMessageRequest {
+                        destination: Destination::Recipient(parent),
+                        authenticated: false,
+                        is_tracked: false,
+                        grant: Resources::default(),
+                        message: mem::take(&mut accumulated),
+                    }]
+                );
+            }
+        }
+    }
 }
 
 /// Creates a [`DepinDemoContract`] instance ready to be tested.
