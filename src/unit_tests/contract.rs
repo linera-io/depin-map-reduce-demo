@@ -1,7 +1,7 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use linera_sdk::{util::BlockingWait, views::View, Contract, ContractRuntime};
+use linera_sdk::{base::ChainId, util::BlockingWait, views::View, Contract, ContractRuntime};
 use test_strategy::proptest;
 
 use depin_demo::Operation;
@@ -46,6 +46,17 @@ fn submit_operation_overflow() {
 
     app.execute_operation(Operation::Submit { value: 1 })
         .blocking_wait();
+}
+
+/// Test connecting the application to a parent chain.
+#[proptest]
+fn connect_to_parent(parent: ChainId) {
+    let mut app = create_and_instantiate_app();
+
+    app.execute_operation(Operation::ConnectToParent { parent })
+        .blocking_wait();
+
+    assert_eq!(*app.state.parent.get(), Some(parent));
 }
 
 /// Creates a [`DepinDemoContract`] instance ready to be tested.
