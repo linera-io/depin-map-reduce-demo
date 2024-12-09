@@ -10,8 +10,9 @@ use serde_json::json;
 
 use super::{DepinDemoService, DepinDemoState};
 
+/// Test reading the value in the state.
 #[test]
-fn query() {
+fn value_query() {
     let value = 60u64;
     let runtime = ServiceRuntime::<DepinDemoService>::new();
     let mut state = DepinDemoState::load(runtime.root_view_storage_context())
