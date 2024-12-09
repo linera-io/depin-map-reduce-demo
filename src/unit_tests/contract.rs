@@ -145,6 +145,16 @@ fn incoming_messages_are_accumulated(incoming_messages: Vec<u32>) {
     );
 }
 
+/// Test if flushed value overflows cause the block to be rejected.
+#[test]
+#[should_panic(expected = "attempt to add with overflow")]
+fn incoming_messages_overflow() {
+    let mut app = create_and_instantiate_app();
+
+    app.execute_message(u64::MAX).blocking_wait();
+    app.execute_message(1).blocking_wait();
+}
+
 /// Creates a [`DepinDemoContract`] instance ready to be tested.
 fn create_and_instantiate_app() -> DepinDemoContract {
     let runtime = ContractRuntime::new().with_application_parameters(());
