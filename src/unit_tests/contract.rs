@@ -130,6 +130,21 @@ fn submit_operation_overflow_is_avoided_by_flushing(parent: ChainId) {
     assert_eq!(*app.state.value.get(), 1);
 }
 
+/// Test if flushed values are accumulated.
+#[proptest]
+fn incoming_messages_are_accumulated(incoming_messages: Vec<u32>) {
+    let mut app = create_and_instantiate_app();
+
+    for &message in &incoming_messages {
+        app.execute_message(message.into()).blocking_wait();
+    }
+
+    assert_eq!(
+        *app.state.value.get(),
+        incoming_messages.into_iter().map(u64::from).sum::<u64>()
+    );
+}
+
 /// Creates a [`DepinDemoContract`] instance ready to be tested.
 fn create_and_instantiate_app() -> DepinDemoContract {
     let runtime = ContractRuntime::new().with_application_parameters(());
