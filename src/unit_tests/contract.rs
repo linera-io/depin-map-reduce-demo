@@ -1,7 +1,6 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use futures::FutureExt as _;
 use linera_sdk::{util::BlockingWait, views::View, Contract, ContractRuntime};
 
 use depin_demo::Operation;
@@ -17,8 +16,7 @@ fn operation() {
 
     let _response = app
         .execute_operation(Operation::Increment { value: increment })
-        .now_or_never()
-        .expect("Execution of application operation should not await anything");
+        .blocking_wait();
 
     assert_eq!(*app.state.value.get(), initial_value + increment);
 }
@@ -32,10 +30,7 @@ fn create_and_instantiate_app(initial_value: u64) -> DepinDemoContract {
         runtime,
     };
 
-    contract
-        .instantiate(initial_value)
-        .now_or_never()
-        .expect("Initialization of application state should not await anything");
+    contract.instantiate(initial_value).blocking_wait();
 
     assert_eq!(*contract.state.value.get(), initial_value);
 
