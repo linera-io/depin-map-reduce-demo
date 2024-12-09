@@ -155,6 +155,20 @@ fn incoming_messages_overflow() {
     app.execute_message(1).blocking_wait();
 }
 
+/// Test if flushed value does not overflow if it is flushed further upwards.
+#[proptest]
+fn incoming_messages_overflow_is_avoided_by_a_flush(parent: ChainId) {
+    let mut app = create_and_instantiate_app();
+
+    app.execute_message(u64::MAX).blocking_wait();
+    app.execute_operation(Operation::ConnectToParent { parent })
+        .blocking_wait();
+    app.execute_operation(Operation::Flush).blocking_wait();
+    app.execute_message(1).blocking_wait();
+
+    assert_eq!(*app.state.value.get(), 1);
+}
+
 /// Creates a [`DepinDemoContract`] instance ready to be tested.
 fn create_and_instantiate_app() -> DepinDemoContract {
     let runtime = ContractRuntime::new().with_application_parameters(());
