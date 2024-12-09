@@ -35,3 +35,16 @@ fn value_query() {
 
     assert_eq!(response, expected)
 }
+
+/// Creates a [`DepinDemoService`] instance ready to be tested.
+fn create_service() -> DepinDemoService {
+    let runtime = ServiceRuntime::new();
+    let state = DepinDemoState::load(runtime.root_view_storage_context())
+        .blocking_wait()
+        .expect("Failed to read from mock key value store");
+
+    DepinDemoService {
+        state: Arc::new(state),
+        runtime,
+    }
+}
