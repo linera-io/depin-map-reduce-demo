@@ -112,6 +112,24 @@ fn flush_sends_messages(parent: ChainId, values_to_submit: Vec<Option<u32>>) {
     }
 }
 
+/// Test that value overflows are avoided by flushing.
+#[proptest]
+fn submit_operation_overflow_is_avoided_by_flushing(parent: ChainId) {
+    let mut app = create_and_instantiate_app();
+
+    app.execute_operation(Operation::Submit { value: u64::MAX })
+        .blocking_wait();
+
+    app.execute_operation(Operation::ConnectToParent { parent })
+        .blocking_wait();
+    app.execute_operation(Operation::Flush).blocking_wait();
+
+    app.execute_operation(Operation::Submit { value: 1 })
+        .blocking_wait();
+
+    assert_eq!(*app.state.value.get(), 1);
+}
+
 /// Creates a [`DepinDemoContract`] instance ready to be tested.
 fn create_and_instantiate_app() -> DepinDemoContract {
     let runtime = ContractRuntime::new().with_application_parameters(());
