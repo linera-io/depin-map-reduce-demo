@@ -25,6 +25,19 @@ fn value_query() {
     assert_eq!(response, expected)
 }
 
+/// Test if it's possible to read the value in the state.
+#[test]
+fn empty_parent_query() {
+    let service = create_service();
+
+    let request = Request::new("{ parent }");
+    let response = service.handle_query(request).blocking_wait();
+
+    let expected = Response::new(Value::from_json(json!({"parent": null})).unwrap());
+
+    assert_eq!(response, expected)
+}
+
 /// Creates a [`DepinDemoService`] instance ready to be tested.
 fn create_service() -> DepinDemoService {
     let runtime = ServiceRuntime::new();
