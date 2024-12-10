@@ -4,11 +4,11 @@
 use std::sync::Arc;
 
 use async_graphql::{Request, Response, Value};
-use linera_sdk::{base::ChainId, util::BlockingWait, views::View, Service, ServiceRuntime};
+use linera_sdk::{base::ChainId, bcs, util::BlockingWait, views::View, Service, ServiceRuntime};
 use serde_json::json;
 use test_strategy::proptest;
 
-use super::{DepinDemoService, DepinDemoState};
+use super::{DepinDemoService, DepinDemoState, Operation};
 
 /// Test reading the value in the state.
 #[test]
@@ -51,6 +51,24 @@ fn parent_query(parent: ChainId) {
 
     let expected =
         Response::new(Value::from_json(json!({ "parent": parent.to_string() })).unwrap());
+
+    assert_eq!(response, expected)
+}
+
+/// Test creating a connect to parent operation.
+#[proptest]
+fn connect_to_parent_mutation(parent: ChainId) {
+    let service = create_service();
+
+    let request = Request::new(format!(
+        "mutation {{ connectToParent(parent: \"{parent}\") }}"
+    ));
+    let response = service.handle_query(request).blocking_wait();
+
+    let operation = bcs::to_bytes(&Operation::ConnectToParent { parent })
+        .expect("Failed to serialize `Operation::ConnectToParent`");
+    let expected =
+        Response::new(Value::from_json(json!({ "connectToParent": operation })).unwrap());
 
     assert_eq!(response, expected)
 }
