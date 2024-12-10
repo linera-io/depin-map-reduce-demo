@@ -4,8 +4,9 @@
 use std::sync::Arc;
 
 use async_graphql::{Request, Response, Value};
-use linera_sdk::{util::BlockingWait, views::View, Service, ServiceRuntime};
+use linera_sdk::{base::ChainId, util::BlockingWait, views::View, Service, ServiceRuntime};
 use serde_json::json;
+use test_strategy::proptest;
 
 use super::{DepinDemoService, DepinDemoState};
 
@@ -34,6 +35,22 @@ fn empty_parent_query() {
     let response = service.handle_query(request).blocking_wait();
 
     let expected = Response::new(Value::from_json(json!({"parent": null})).unwrap());
+
+    assert_eq!(response, expected)
+}
+
+/// Test if it's possible to read the value in the state.
+#[proptest]
+fn parent_query(parent: ChainId) {
+    let mut service = create_service();
+
+    service.state.edit().parent.set(Some(parent));
+
+    let request = Request::new("{ parent }");
+    let response = service.handle_query(request).blocking_wait();
+
+    let expected =
+        Response::new(Value::from_json(json!({ "parent": parent.to_string() })).unwrap());
 
     assert_eq!(response, expected)
 }
