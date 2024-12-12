@@ -73,6 +73,21 @@ fn connect_to_parent_mutation(parent: ChainId) {
     assert_eq!(response, expected)
 }
 
+/// Test creating a submit operation.
+#[proptest]
+fn submit_mutation(value: u64) {
+    let service = create_service();
+
+    let request = Request::new(format!("mutation {{ submit(value: \"{value}\") }}"));
+    let response = service.handle_query(request).blocking_wait();
+
+    let operation = bcs::to_bytes(&Operation::Submit { value })
+        .expect("Failed to serialize `Operation::Submit`");
+    let expected = Response::new(Value::from_json(json!({ "submit": operation })).unwrap());
+
+    assert_eq!(response, expected)
+}
+
 /// Creates a [`DepinDemoService`] instance ready to be tested.
 fn create_service() -> DepinDemoService {
     let runtime = ServiceRuntime::new();

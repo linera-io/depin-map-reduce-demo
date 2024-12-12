@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 57342d2a01017b74ec2bbb7ac4547077d63353d02782dd9941721d14fbc3964f # shrinks to input = _SubmitMutationArgs { value: 9223372036854775808 }
