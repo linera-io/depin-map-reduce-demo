@@ -88,6 +88,21 @@ fn submit_mutation(value: u64) {
     assert_eq!(response, expected)
 }
 
+/// Test creating a flush operation.
+#[test]
+fn flush_mutation() {
+    let service = create_service();
+
+    let request = Request::new("mutation { flush }");
+    let response = service.handle_query(request).blocking_wait();
+
+    let operation =
+        bcs::to_bytes(&Operation::Flush).expect("Failed to serialize `Operation::Flush`");
+    let expected = Response::new(Value::from_json(json!({ "flush": operation })).unwrap());
+
+    assert_eq!(response, expected)
+}
+
 /// Creates a [`DepinDemoService`] instance ready to be tested.
 fn create_service() -> DepinDemoService {
     let runtime = ServiceRuntime::new();
