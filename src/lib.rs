@@ -3,7 +3,8 @@
 
 use async_graphql::{Request, Response};
 use linera_sdk::{
-    base::{ChainId, ContractAbi, ServiceAbi},
+    linera_base_types::ChainId,
+    abi::{ContractAbi, ServiceAbi},
     graphql::GraphQLMutationRoot,
 };
 use serde::{Deserialize, Serialize};

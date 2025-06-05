@@ -42,7 +42,7 @@ export LINERA_FAUCET_URL=http://localhost:8081
 For the steps below, the Linera testnet will be used:
 
 ```
-export LINERA_FAUCET_URL=https://faucet.testnet-archimedes.linera.net
+export LINERA_FAUCET_URL=https://faucet.testnet-babbage.linera.net
 ```
 
 A wallet needs to be initialized to handle the microchains, so a temporary one will be created:
@@ -63,27 +63,19 @@ export ROOT_CHAIN="$(linera wallet show --short)"
 An edge chain must also be created.
 
 ```
-export EDGE_CHAIN="$(linera open-chain --initial-balance 50 | tail -n 1)"
+export EDGE_CHAIN="$(linera open-chain --initial-balance 50 | sed '2q;d')"
 ```
 
-The application must then be deployed on both chains. The root chain already has the application,
-because it was used to create the application. The edge chain must then request the root chain for
-it.
+The application must then be deployed on the root chain.
 
 ```
 export APP_ID="$(linera project publish-and-create .)"
-# Send request from edge chain to root chain
-linera request-application "$APP_ID" --requester-chain-id "$EDGE_CHAIN"
-# Receive the request and send a reply from the root chain
-linera process-inbox "$ROOT_CHAIN"
-# Handle the reply to complete registration on the edge chain
-linera process-inbox "$EDGE_CHAIN"
 ```
 
 To interact with the application, a node service must be kept running
 
 ```
-linera service &
+linera service --port 8080 &
 ```
 
 Values can be submitted to the edge chain using GraphQL
