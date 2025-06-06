@@ -4,15 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-async-graphql = { version = "=7.0.2", default-features = false }
-linera-sdk = "0.13.1"
+async-graphql = { version = "7.0", default-features = false }
+linera-sdk = "0.14.1"
 futures = { version = "0.3 "}
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
 
 [dev-dependencies]
 anyhow = "1.0.94"
-linera-sdk = { version = "0.13.1", features = ["test", "wasmer"] }
+linera-sdk = { version = "0.14.1", features = ["test", "wasmer"] }
 proptest = "1.5.0"
 test-log = "0.2.16"
 test-strategy = "0.4.0"

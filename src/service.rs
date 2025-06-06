@@ -13,8 +13,8 @@ use std::sync::Arc;
 
 use async_graphql::{EmptySubscription, Schema};
 use linera_sdk::{
-    base::{ChainId, WithServiceAbi},
-    bcs,
+    linera_base_types::ChainId,
+    abi::WithServiceAbi,
     views::View,
     Service, ServiceRuntime,
 };
@@ -25,7 +25,7 @@ use self::state::DepinDemoState;
 
 pub struct DepinDemoService {
     state: Arc<DepinDemoState>,
-    runtime: ServiceRuntime<Self>,
+    runtime: Arc<ServiceRuntime<Self>>,
 }
 
 linera_sdk::service!(DepinDemoService);
@@ -38,42 +38,51 @@ impl Service for DepinDemoService {
     type Parameters = ();
 
     async fn new(runtime: ServiceRuntime<Self>) -> Self {
-        let state = Arc::new(
-            DepinDemoState::load(runtime.root_view_storage_context())
-                .await
-                .expect("Failed to load state"),
-        );
-
-        DepinDemoService { state, runtime }
+        DepinDemoService {
+            state: Arc::new(
+                DepinDemoState::load(runtime.root_view_storage_context())
+                    .await
+                    .expect("Failed to load state"),
+            ),
+            runtime: Arc::new(runtime),
+        }
     }
 
     async fn handle_query(&self, query: Self::Query) -> Self::QueryResponse {
-        Schema::build(self.state.clone(), OperationMutation, EmptySubscription)
+        Schema::build(
+            self.state.clone(),
+            MutationRoot {
+                runtime: Arc::clone(&self.runtime),
+            },
+            EmptySubscription,
+        )
             .finish()
             .execute(query)
             .await
     }
 }
 
-/// Helper type to handle mutation queries and generate operations.
-struct OperationMutation;
+struct MutationRoot {
+    runtime: Arc<ServiceRuntime<DepinDemoService>>,
+}
 
 #[async_graphql::Object]
-impl OperationMutation {
+impl MutationRoot {
     /// Creates an operation to connect this chain to a parent chain.
-    async fn connect_to_parent(&self, parent: ChainId) -> async_graphql::Result<Vec<u8>> {
-        Ok(bcs::to_bytes(&Operation::ConnectToParent { parent })?)
+    async fn connect_to_parent(&self, parent: ChainId) -> bool {
+        self.runtime.schedule_operation(&Operation::ConnectToParent { parent });
+        true
     }
 
     /// Creates an operation to submit a value.
-    async fn submit(&self, value: String) -> async_graphql::Result<Vec<u8>> {
-        Ok(bcs::to_bytes(&Operation::Submit {
-            value: value.parse()?,
-        })?)
-    }
+    async fn submit(&self, value: String) -> async_graphql::Result<bool> {
+        self.runtime.schedule_operation(&Operation::Submit { value: value.parse()? });
+        Ok(true)
+   }
 
     /// Creates an operation to flush the accumulated values to the parent chain.
-    async fn flush(&self) -> async_graphql::Result<Vec<u8>> {
-        Ok(bcs::to_bytes(&Operation::Flush)?)
+    async fn flush(&self) -> bool {
+        self.runtime.schedule_operation(&Operation::Flush);
+        true
     }
 }

@@ -5,7 +5,7 @@
 use std::sync::Arc;
 
 use linera_sdk::{
-    base::ChainId,
+    linera_base_types::ChainId,
     views::{linera_views, RegisterView, RootView, ViewStorageContext},
 };
 

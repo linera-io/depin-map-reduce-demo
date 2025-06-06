@@ -12,7 +12,7 @@ mod tests;
 use std::mem;
 
 use linera_sdk::{
-    base::WithContractAbi,
+    abi::WithContractAbi,
     views::{RootView, View},
     Contract, ContractRuntime,
 };
@@ -36,6 +36,7 @@ impl Contract for DepinDemoContract {
     type Message = u64;
     type Parameters = ();
     type InstantiationArgument = ();
+    type EventValue = ();
 
     async fn load(runtime: ContractRuntime<Self>) -> Self {
         let state = DepinDemoState::load(runtime.root_view_storage_context())

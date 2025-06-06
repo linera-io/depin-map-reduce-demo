@@ -26,7 +26,6 @@ async fn propagation_test() -> anyhow::Result<()> {
                 let branch_chain = validator.new_chain().await;
                 let branch_chain_id = branch_chain.id();
 
-                branch_chain.register_application(application_id).await;
                 branch_chain
                     .add_block(|block| {
                         block.with_operation(
@@ -44,7 +43,6 @@ async fn propagation_test() -> anyhow::Result<()> {
                         tokio::spawn(async move {
                             let edge_chain = validator.new_chain().await;
 
-                            edge_chain.register_application(application_id).await;
                             edge_chain
                                 .add_block(|block| {
                                     block.with_operation(
@@ -94,7 +92,8 @@ async fn propagation_test() -> anyhow::Result<()> {
 
     let response = root_chain
         .graphql_query(application_id, "query { value }")
-        .await;
+        .await
+        .response;
     let final_value = response["value"]
         .as_u64()
         .expect("Failed to get the value as `u64`");
