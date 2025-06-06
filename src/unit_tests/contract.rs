@@ -4,7 +4,7 @@
 use std::mem;
 
 use linera_sdk::{
-    base::{ChainId, Destination, Resources, SendMessageRequest},
+    linera_base_types::{ChainId, Destination, Resources, SendMessageRequest},
     util::BlockingWait,
     views::View,
     Contract, ContractRuntime,
