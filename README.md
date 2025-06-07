@@ -33,23 +33,21 @@ running on a Linera network. This can be either the testnet, the devnet, or a lo
 can be started with
 
 ```ignore
-linera net up &
-# Use the environment variables described in the output from the command above
-LINERA_WALLET=... LINERA_STORAGE=... linera faucet --amount 100 --port 8081 &
-export LINERA_FAUCET_URL=http://localhost:8081
+linera net up --with-faucet --faucet-port 8081 &
+LINERA_FAUCET_URL=http://localhost:8081
 ```
 
-For the steps below, the Linera testnet will be used:
-
+Alternatively, to use the Linera testnet, one may write:
 ```
-export LINERA_FAUCET_URL=https://faucet.testnet-babbage.linera.net
+LINERA_FAUCET_URL=https://faucet.testnet-babbage.linera.net
 ```
 
 A wallet needs to be initialized to handle the microchains, so a temporary one will be created:
 
 ```
-export WALLET_DIR="$(mktemp -d)"
+WALLET_DIR="$(mktemp -d)"
 export LINERA_WALLET="${WALLET_DIR}/wallet.json"
+export LINERA_KEYSTORE="${WALLET_DIR}/keystore.json"
 export LINERA_STORAGE="rocksdb:${WALLET_DIR}/storage.db"
 linera wallet init --faucet "$LINERA_FAUCET_URL" --with-new-chain
 ```
@@ -57,19 +55,19 @@ linera wallet init --faucet "$LINERA_FAUCET_URL" --with-new-chain
 The wallet already contains a default microchain. This chain will be used as the root chain.
 
 ```
-export ROOT_CHAIN="$(linera wallet show --short)"
+ROOT_CHAIN="$(linera wallet show --short)"
 ```
 
 An edge chain must also be created.
 
 ```
-export EDGE_CHAIN="$(linera open-chain --initial-balance 50 | sed '2q;d')"
+EDGE_CHAIN="$(linera open-chain --initial-balance 50 | sed '2q;d')"
 ```
 
 The application must then be deployed on the root chain.
 
 ```
-export APP_ID="$(linera project publish-and-create .)"
+APP_ID="$(linera project publish-and-create .)"
 ```
 
 To interact with the application, a node service must be kept running
@@ -108,9 +106,10 @@ And once the message is received, it can queried from the root chain
 # Ensure the flush message is received locally
 sleep 3
 
-export VALUE="$(\
+VALUE="$(\
     curl "http://127.0.0.1:8080/chains/${ROOT_CHAIN}/applications/${APP_ID}" \
         --data '{"query": "query { value }"}' \
 )"
 test "$VALUE" = '{"data":{"value":15}}'
 ```
+
