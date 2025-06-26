@@ -47,7 +47,6 @@ A wallet needs to be initialized to handle the microchains, so a temporary one w
 ```
 WALLET_DIR="$(mktemp -d)"
 export LINERA_WALLET="${WALLET_DIR}/wallet.json"
-export LINERA_KEYSTORE="${WALLET_DIR}/keystore.json"
 export LINERA_STORAGE="rocksdb:${WALLET_DIR}/storage.db"
 linera wallet init --faucet "$LINERA_FAUCET_URL" --with-new-chain
 ```
